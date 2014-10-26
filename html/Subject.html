@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <title> {{ title }} </title>
+  </head>
+  <body>
+    <h1> {{ title }} </h1>
+    <p>
+    <form action="{{ action }}" method="{{ method }}">
+        Subject ID:
+        <input type="text" name="{{ subjectId }}" />
+        <br />
+        Subject Name:
+        <input type="text" name="{{ subjectName }}" />
+        <br />
+        Subject Year:
+        <input type="text" name="{{ subjectYear }}" />
+        <br />
+        Subject Credit:
+        <input type="text" name="{{ subjectCredit }}" />
+        <br />
+        <input type="submit" value="Add" />
+    </form>
+    </p>
+    <p>
+    <table border="1">
+        {% for subject in subjects %}
+        <tr>
+            <td>{{ subject.code }}</td>
+            <td>{{ subject.name }}</td>
+            <td>{{ subject.year }}</td>
+            <td>{{ subject.credit }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    </p>
+  </body>
+</html>

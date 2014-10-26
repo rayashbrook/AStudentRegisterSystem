@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+        <title> {{ title }} </title>
+        <script src="../js/validateForm.js"></script>
+        <script>
+        var myForm = "addCourse";
+        var myFields;
+        var fields = [
+                    "{{ code }}",
+                    "{{ name }}",
+                    "{{ price }}",
+                    "{{ year }}"
+                    ];
+        </script>
+        <script>
+        function editCredit()
+        {
+            var tag = document.getElementById("credits");
+            var years = document.getElementById("mySelect").value;
+            var inputs = "Credit Needed:<br />";
+            myFields = fields.slice();
+            for(i=1;i<=years;i++)
+            {
+                inputs+= "Year "+ i + ": <input type=\"text\" name=\"y" + i + "\" /><br />";
+                myFields.push("y"+i.toString());
+            }
+            tag.innerHTML = inputs;
+        }
+        </script>
+  </head>
+  <body>
+    <h1> {{ title }} </h1>
+    <p>
+    <form name="addCourse"
+        action="{{ action }}"
+        method="{{ method }}"
+        id="addCourse"
+        onsubmit="return validateForm(myForm, myFields)">
+        <p>
+            Course Code:
+            <input type="text" name="{{ code }}" />
+            Course Name:
+            <input type="text" name="{{ name }}" />
+            Price:
+            <input type="text" name="{{ price }}" />
+            Year:
+            <select name="{{ year }}" id="mySelect" onchange="editCredit()">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </p>
+        <p id="credits">
+            <script>
+                editCredit();
+            </script>
+        </p>
+        <p>
+        </p>
+        <p>
+            <input type="submit" value="Add" />
+        </p>
+    </form>
+    </p>
+    <p>
+    <table border="1">
+        {% for course in courses %}
+        <tr>
+            <td>
+                <a href="course?code={{ course.code }}">
+                    {{ course.code }}
+                </a>
+            </td>
+            <td>{{ course.name }}</td>
+            <td>{{ course.price }}</td>
+            <td>{{ course.year }}</td>
+            {% for credit in course.credits %}
+            <td>{{ credit }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    </p>
+  </body>
+</html>

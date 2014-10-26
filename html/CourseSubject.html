@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <title> {{ title }} </title>
+    <script>
+        function addSubject()
+        {
+            var xmlhttp;
+            var subject;
+            var compulsory;
+            var url;
+            subject = document.getElementById("mySelect").value;
+            compulsory = document.getElementById("compulsory").checked?1:0;
+            url = "add-subject-to-course?";
+            url += "courseCode=" + "{{ course.code }}";
+            url += "&subjectCode=" + subject;
+            url += "&compulsory=" + compulsory;
+            if (window.XMLHttpRequest)
+            {// code for IE7+, Firefox, Chrome, Opera, Safari
+                xmlhttp=new XMLHttpRequest();
+            }
+            else
+            {// code for IE6, IE5
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.onreadystatechange=function()
+            {
+                if (xmlhttp.readyState==4 && xmlhttp.status==200)
+                {
+                    document.location.reload(true);
+                }
+            }
+            xmlhttp.open("GET",url,true);
+            xmlhttp.send();
+        }
+    </script>
+  </head>
+  <body>
+    <h1> {{ title }} </h1>
+    <p>
+    {{ course.name }}
+    </p>
+    <ul>
+        {% for cs in courseSubjects %}
+        <li>
+            {% for ms in mySubjects %}
+                {% if cs.subjectCode == ms.code %}
+                    {{ ms.name }}
+                    {% if not cs.compulsory %}
+                        (Optional)
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </li>
+        {% endfor %}
+    </ul>
+    
+    <select name="subjects" id="mySelect" onchange="editCredit()">
+        {% for subject in subjects %}
+        <option value="{{ subject.code }}">{{ subject.name }}</option>
+        {% endfor %}
+    </select>
+    Compulsory:
+    <input type="checkbox" id="compulsory">
+    <input type="button" name="add" value="Add" onclick="addSubject()"></input>
+  </body>
+</html>
