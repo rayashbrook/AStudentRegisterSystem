@@ -1,22 +1,13 @@
 from google.appengine.ext import ndb
 
-class User:
-    def __init__(self, id, pwd, name, age, address):
-        self.id = id
-        self.pwd = pwd
-        self.name = name
-        self.age = age
-        self.address = address
+class Student(ndb.Model):
+    id = ndb.StringProperty()
+    pwd = ndb.StringProperty()
+    name = ndb.StringProperty()
+    age = ndb.IntegerProperty()
+    address = ndb.StringProperty()
+    year = ndb.IntegerProperty()
 
-class Student(User):
-    def __init__(self, id, pwd, name, age, address):
-        super(Student, self).__init__(id, pwd, name, age, address)
-    def setYear(year):
-        self.year = year
-
-class Stuff(User):
-    def __init__(self, id, pwd, name, age, address):
-        super(Stuff, self).__init__(id, pwd, name, age, address)
 
 class Course(ndb.Model):
     code = ndb.StringProperty()
