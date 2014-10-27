@@ -1,0 +1,3 @@
+{% for subject in subjects %}
+<input type="checkbox" name="subject" value="{{ subject.code }}">{{ subject.name }} Y{{ subject.year }}</input>
+{% endfor %}

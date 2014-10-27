@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>
+        {{ title }}
+    </title>
+</head>
+<body>
+<h1>
+    {{ title }}
+</h1>
+{{ loginMsg }}
+{% if not key %}
+<form action="{{ action }}">
+    Student ID: <input type="text" name="id" />
+    PIN: <input type="password" name="pwd" />
+    <input type="submit" name="login" value="Login"/>
+</form>
+{% else %}
+<form action="{{ action }}">
+    {{ key.id }}<input type="submit" name="login" value="Logout" />
+</form>
+{% endif %}
+
+</body>
+</html>

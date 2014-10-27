@@ -3,6 +3,7 @@
   <head>
     <meta content="text/html; charset=windows-1252" http-equiv="content-type">
     <title> {{ title }} </title>
+      <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script>
         function addSubject()
         {
@@ -16,6 +17,7 @@
             url += "courseCode=" + "{{ course.code }}";
             url += "&subjectCode=" + subject;
             url += "&compulsory=" + compulsory;
+            url += "&courseYear=" + "{{ yearSelect }}";
             if (window.XMLHttpRequest)
             {// code for IE7+, Firefox, Chrome, Opera, Safari
                 xmlhttp=new XMLHttpRequest();
@@ -34,12 +36,28 @@
             xmlhttp.open("GET",url,true);
             xmlhttp.send();
         }
+
+        function changeYear()
+        {
+
+        }
     </script>
   </head>
   <body>
     <h1> {{ title }} </h1>
     <p>
-    {{ course.name }}
+        {{ course.name }}
+    </p>
+    <p>
+        {% for year in years %}
+        {% if year != yearSelect %}
+        <a href="{{ url }}{{ year }}">
+        {% endif %}
+        Y{{ year }}
+        {% if year != yearSelect %}
+        </a>
+        {% endif %}
+        {% endfor %}
     </p>
     <ul>
         {% for cs in courseSubjects %}

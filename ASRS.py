@@ -3,24 +3,19 @@ from google.appengine.ext import ndb
 class Student(ndb.Model):
     id = ndb.StringProperty()
     pwd = ndb.StringProperty()
-    name = ndb.StringProperty()
-    age = ndb.IntegerProperty()
+    fname = ndb.StringProperty()
+    lname = ndb.StringProperty()
+    birthday = ndb.DateProperty()
     address = ndb.StringProperty()
+    courseId = ndb.StringProperty()
     year = ndb.IntegerProperty()
-
 
 class Course(ndb.Model):
     code = ndb.StringProperty()
     name = ndb.StringProperty()
     credits = ndb.IntegerProperty(repeated=True)
-    year = ndb.IntegerProperty();
-    price = ndb.FloatProperty();
-
-
-class CourseSubject(ndb.Model):
-    courseCode = ndb.StringProperty()
-    subjectCode = ndb.StringProperty()
-    compulsory = ndb.BooleanProperty()
+    year = ndb.IntegerProperty()
+    price = ndb.FloatProperty()
 
 class Subject(ndb.Model):
     code = ndb.StringProperty()
@@ -28,3 +23,14 @@ class Subject(ndb.Model):
     year = ndb.IntegerProperty()
     credit = ndb.IntegerProperty()
 
+
+class CourseSubject(ndb.Model):
+    courseCode = ndb.StringProperty()
+    courseYear = ndb.IntegerProperty()
+    subjectCode = ndb.StringProperty()
+    compulsory = ndb.BooleanProperty()
+
+class StudentSubject(ndb.Model):
+    studentId = ndb.StringProperty()
+    subjectCode = ndb.StringProperty()
+    credit = ndb.IntegerProperty()

@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="content-type">
+	<title>
+		{{ title }}
+	</title>
+	<script src="../js/validateForm.js" type="text/javascript"></script>
+	<script>
+		var available = false;
+		var myForm = "addStudent";
+		var fields;
+		fields = [
+			"firstname",
+			"lastname",
+			"id",
+			"password",
+			"confirm",
+			"year",
+			"month",
+			"day",
+			"address"
+		];
+	</script>
+	<script>
+		function checkAvailable()
+		{
+			var id = document.forms[myForm]["id"].value;
+			if(id=="")
+			{
+				document.forms[myForm]['checkid'].value = "Empty"
+				return;
+			}
+			var xmlhttp;
+			var url = "{{ checkAvailableUrl }}?id=";
+			url += id;
+			if (window.XMLHttpRequest)
+			{// code for IE7+, Firefox, Chrome, Opera, Safari
+				xmlhttp=new XMLHttpRequest();
+			}
+			else
+			{// code for IE6, IE5
+				xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.onreadystatechange=function()
+			{
+				if (xmlhttp.readyState==4 && xmlhttp.status==200)
+				{
+					if(xmlhttp.responseText=="yes")
+					{
+						available =  false;
+					}
+					else
+					{
+						available = true;
+					}
+				}
+				else
+				{
+					available = false;
+				}
+				document.forms[myForm]['checkid'].value = available?"Valid":"Invalid";
+			}
+			xmlhttp.open("GET",url,true);
+			xmlhttp.send();
+		}
+		function validate()
+		{
+			if(available)
+			{
+				if(document.forms[myForm]["password"].value == document.forms[myForm]["confirm"].value)
+				{
+					return validateForm(myForm, fields);
+				}
+				alert("You must type the same password each time.");
+				return false;
+			}
+			alert("Invalid ID");
+			return false;
+		}
+		function showOptionalSubjects(courseCode, year, elementId)
+		{
+			var xmlhttp;
+			var url;
+			url = "show-optional-subjects?";
+			url += "courseCode=" + courseCode;
+			url += "&year=" + year.toString();
+			if (window.XMLHttpRequest)
+			{// code for IE7+, Firefox, Chrome, Opera, Safari
+				xmlhttp=new XMLHttpRequest();
+			}
+			else
+			{// code for IE6, IE5
+				xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.onreadystatechange=function()
+			{
+				if (xmlhttp.readyState==4 && xmlhttp.status==200)
+				{
+					document.getElementById(elementId).innerHTML = xmlhttp.responseText;
+				}
+			}
+			xmlhttp.open("GET",url,true);
+			xmlhttp.send();
+		}
+
+		function changeCourse()
+		{
+			course = document.getElementById("courses").value;
+			showOptionalSubjects(course, 1, "optionalSubjects");
+		}
+		window.onload = function() {
+			changeCourse();
+		}
+
+	</script>
+</head>
+<body>
+<h1>
+	{{ title }}
+</h1>
+<form action="{{ action }}" name="addStudent" id="addStudent" onsubmit="return validate()">
+	<table>
+		<tr>
+			<td>
+				First Name:
+			</td>
+			<td>
+				<input type="text" name="firstname">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Last Name:
+			</td>
+			<td>
+				<input type="text" name="lastname">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Student ID:
+			</td>
+			<td>
+				<input type="text" name="id" oninput="checkAvailable()"> <input type="button" name="checkid" value="Empty" disabled="true">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Password:
+			</td>
+			<td>
+				<input type="password" name="password">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Confirm:
+			</td>
+			<td>
+				<input type="password" name="confirm">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Birthday:
+			</td>
+			<td>
+				Year: <input type="number" name="year"> Month: <input type="number" name="month"> Day: <input type="number" name="day">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Address:
+			</td>
+			<td>
+				<input type="text" name="address" size="100">
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Course:
+			</td>
+			<td>
+				<select name="courses" id="courses" onchange="changeCourse()">
+					{% for course in courses %}
+					<option value="{{ course.code }}">{{ course.code }} - {{ course.name }}</option>
+					{% endfor %}
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Optional Subjects:
+			</td>
+			<td id="optionalSubjects"></td>
+		</tr>
+		<tr>
+			<td>
+				<input type="submit" value="Submit">
+			</td>
+		</tr>
+	</table>
+</form>
+</body>
+</html>
