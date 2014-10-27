@@ -11,7 +11,7 @@
     {{ title }}
 </h1>
 {{ loginMsg }}
-{% if not key %}
+{% if not student %}
 <form action="{{ action }}">
     Student ID: <input type="text" name="id" />
     PIN: <input type="password" name="pwd" />
@@ -19,8 +19,40 @@
 </form>
 {% else %}
 <form action="{{ action }}">
-    {{ key.id }}<input type="submit" name="login" value="Logout" />
+    {{ student.fname }} {{ student.lname }} - {{ student.id }}<input type="submit" name="login" value="Logout" />
 </form>
+<br />
+<h2>{{ course.code }} - {{ course.name }}</h2>
+<table>
+    <tr>
+        <td>Credit Required:</td>
+        <td>{{ creditRequired }}</td>
+    </tr>
+    <tr>
+        <td>Credit Earned:</td>
+        <td>{{ creditEarned }}</td>
+    </tr>
+</table>
+<table border="1">
+    <tr>
+       <th>Subject</th>
+       <th>Credit</th>
+    </tr>
+    {% for subject in subjects %}
+    <tr>
+        <td>{{ subject.name }}</td>
+        <td>{{ subject.credit }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% if creditRequired > creditEarned %}
+<p><h3>You cannot register next year course.</h3></p>
+{% else %}
+<p>
+    <input type="button" name="register" id="register" value="Register Next Year by One Click"/>
+</p>
 {% endif %}
 
 </body>

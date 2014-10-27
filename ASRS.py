@@ -34,3 +34,4 @@ class StudentSubject(ndb.Model):
     studentId = ndb.StringProperty()
     subjectCode = ndb.StringProperty()
     credit = ndb.IntegerProperty()
+    subjectYear = ndb.IntegerProperty()

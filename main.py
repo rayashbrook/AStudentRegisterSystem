@@ -149,6 +149,7 @@ class ProcessingFirstYear(webapp2.RequestHandler):
             StudentSubject(parent=ParentKeys.studentSubject,
                            studentId=id,
                            subjectCode=subject,
+                           subjectYear=_year,
                            credit=0).put()
         courseSubjects = CourseSubject.query(ancestor=ParentKeys.courseSubject)
         courseSubjects = courseSubjects.filter(CourseSubject.courseCode==course,
@@ -158,6 +159,7 @@ class ProcessingFirstYear(webapp2.RequestHandler):
             StudentSubject(parent=ParentKeys.studentSubject,
                            studentId=id,
                            subjectCode=subject,
+                           subjectYear=_year,
                            credit=0).put()
         self.response.out.write("<h2>Success</h2>")
 
@@ -175,31 +177,53 @@ class RegisterNonFirstYearCourse(BaseHandler):
         logged = False
         sid = self.session.get('sid')
         loginMsg = ""
-        key = False
+        student = False
+        course = False
+        subjects = False
+        creditRequired = 0
+        creditEarned = 0
         if not sid:
             logged = True
             login = cgi.escape(self.request.get('login'))
             if(login=="Login"):
                id = cgi.escape(self.request.get('id'))
                pwd = cgi.escape(self.request.get('pwd'))
-               key = Student.query(Student.id==id,
+               student = Student.query(ancestor=ParentKeys.student)
+               student = student.filter(Student.id==id,
                                    Student.pwd==pwd).get()
-               if key:
-                    self.session['sid'] = key.id
+               if student:
+                    self.session['sid'] = student.id
                else:
                     loginMsg = "ID or Password Wrong"
         else:
-            key = Student.query(Student.id==sid).get()
+            student = Student.query(Student.id==sid).get()
             login = cgi.escape(self.request.get('login'))
             if(login=="Logout"):
                 self.session.pop('sid')
-                key = False
-           
+                student = False
+            else:
+                course = Course.query(ancestor=ParentKeys.course)
+                course = course.filter(Course.code==student.courseId).get()
+                studentSubjects = StudentSubject.query(ancestor=ParentKeys.studentSubject)
+                studentSubjects = studentSubjects.filter(StudentSubject.studentId==student.id)
+                subjects = []
+                for studentSubject in studentSubjects:
+                    subject = Subject.query(ancestor=ParentKeys.subject)
+                    subject = subject.filter(Subject.code==studentSubject.subjectCode).get()
+                    subject.credit = studentSubject.credit
+                    subjects.append(subject)
+                    creditEarned += subject.credit
+                creditRequired = course.credits[student.year-1]
+        
         templateValues = {
             'title' : Index.title + ' - Register Non-First Year Course',
             'action' : Index.nonFirstYearUrl,
             'loginMsg' : loginMsg,
-            'key' : key,
+            'student' : student,
+            'course' : course,
+            'subjects' : subjects,
+            'creditRequired' : creditRequired,
+            'creditEarned' : creditEarned,
         }
         
         path = os.path.join(os.path.dirname(__file__), 'html/RegisterNonFirstYear.html')
