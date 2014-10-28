@@ -153,6 +153,7 @@ class ProcessingFirstYear(webapp2.RequestHandler):
                            credit=0).put()
         courseSubjects = CourseSubject.query(ancestor=ParentKeys.courseSubject)
         courseSubjects = courseSubjects.filter(CourseSubject.courseCode==course,
+                                               CourseSubject.courseYear==_year,
                                                CourseSubject.compulsory==True)
         for courseSubject in courseSubjects:
             subject = courseSubject.subjectCode
@@ -174,16 +175,14 @@ class CheckIdAvailable(webapp2.RequestHandler):
 
 class RegisterNonFirstYearCourse(BaseHandler):
     def get(self):
-        logged = False
         sid = self.session.get('sid')
         loginMsg = ""
         student = False
-        course = False
-        subjects = False
+        course = None
+        subjects = None
         creditRequired = 0
         creditEarned = 0
         if not sid:
-            logged = True
             login = cgi.escape(self.request.get('login'))
             if(login=="Login"):
                id = cgi.escape(self.request.get('id'))
@@ -195,8 +194,10 @@ class RegisterNonFirstYearCourse(BaseHandler):
                     self.session['sid'] = student.id
                else:
                     loginMsg = "ID or Password Wrong"
-        else:
-            student = Student.query(Student.id==sid).get()
+        sid = self.session.get('sid')
+        if sid:
+            student = Student.query(ancestor=ParentKeys.student)
+            student = student.filter(Student.id==sid).get()
             login = cgi.escape(self.request.get('login'))
             if(login=="Logout"):
                 self.session.pop('sid')

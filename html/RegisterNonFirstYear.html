@@ -45,15 +45,15 @@
     </tr>
     {% endfor %}
 </table>
+    {% if creditRequired > creditEarned %}
+    <p><h3>You cannot register next year course.</h3></p>
+    {% else %}
+    <p>
+        <input type="button" name="register" id="register" value="Register Next Year by One Click"/>
+    </p>
+    {% endif %}
 {% endif %}
 
-{% if creditRequired > creditEarned %}
-<p><h3>You cannot register next year course.</h3></p>
-{% else %}
-<p>
-    <input type="button" name="register" id="register" value="Register Next Year by One Click"/>
-</p>
-{% endif %}
 
 </body>
 </html>

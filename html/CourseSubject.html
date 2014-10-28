@@ -64,7 +64,7 @@
         <li>
             {% for ms in mySubjects %}
                 {% if cs.subjectCode == ms.code %}
-                    {{ ms.name }}
+                    {{ ms.name }} Y{{ ms.year }}
                     {% if not cs.compulsory %}
                         (Optional)
                     {% endif %}
@@ -76,7 +76,7 @@
     
     <select name="subjects" id="mySelect" onchange="editCredit()">
         {% for subject in subjects %}
-        <option value="{{ subject.code }}">{{ subject.name }}</option>
+        <option value="{{ subject.code }}">{{ subject.name }} - Y{{ subject.year }}</option>
         {% endfor %}
     </select>
     Compulsory:
