@@ -12,11 +12,7 @@ import time
 from webapp2_extras import security
 from webapp2_extras import sessions
 
-from ASRS import Student
-from ASRS import Subject
-from ASRS import Course
-from ASRS import CourseSubject
-from ASRS import StudentSubject
+from ASRS import *
 
 class BaseHandler(webapp2.RequestHandler):
     def dispatch(self):
@@ -49,18 +45,23 @@ class Index(object):
 
     adminUrl = "admin"
     manageCourseUrl = "add-course"
-    addCourseText = "Add New Course"
+    addCourseText = "Course"
     manageSubjectUrl = "add-subject"
-    addSubjectText = "Add New Subject"
+    addSubjectText = "Subject"
     manageCourseSubjectUrl = "course"
     addCourseSubjectUrl = "add-subject-to-course"
+    
+    adminNavigator = {
+        'course' : {
+            'text' : addCourseText,
+            'url' : manageCourseUrl
+        },
+        'subject' : {
+            'text' : addSubjectText,
+            'url' : manageSubjectUrl
+        }
+    }
 
-class ParentKeys():
-    course = ndb.Key("Entity", "course_key")
-    subject = ndb.Key("Entity", "subject_key")
-    courseSubject = ndb.Key("Entity", "course_subject_key")
-    student = ndb.Key("Entity", "student_key")
-    studentSubject = ndb.Key("Entity", "student_subject_key")
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -234,10 +235,7 @@ class Admin(webapp2.RequestHandler):
     def get(self):
         templateValues = {
             'title' : Index.title + ' - Admin',
-            'addCourseUrl' : Index.adminUrl + "/" + Index.manageCourseUrl,
-            'addCourseText' : Index.addCourseText,
-            'addSubjectUrl' : Index.adminUrl + "/" + Index.manageSubjectUrl,
-            'addSubjectText' : Index.addSubjectText,
+            'navigator' : Index.adminNavigator,
         }
         
         path = os.path.join(os.path.dirname(__file__), 'html/admin.html')
@@ -246,31 +244,53 @@ class Admin(webapp2.RequestHandler):
 
 class ManageCourse(webapp2.RequestHandler):
     def get(self):
-        _code = cgi.escape(self.request.get('code'))
-        _name = cgi.escape(self.request.get('name'))
-        _year = cgi.escape(self.request.get('year'))
-        _price = cgi.escape(self.request.get('price'))
-        if(_code!="" and _name!="" and _year!="" and _price!=""):
-            _credits = []
-            for i in range(1, int(_year)+1):
-                credit = cgi.escape(self.request.get('y'+str(i)))
-                _credits.append(int(credit))
-            Course(parent=ParentKeys.course,
-                   code=_code,
-                   name=_name,
-                   year=int(_year),
-                   credits=_credits,
-                   price=float(_price)).put()
+        action = cgi.escape(self.request.get('action'))
+        code = cgi.escape(self.request.get('code'))
+        name = cgi.escape(self.request.get('name'))
+        year = cgi.escape(self.request.get('year'))
+        _credits = self.request.get_all('credit')
+        credits = [0, 0, 0, 0, 0]
         
+        if(code!="" and name!="" and year!=""):
+            i = 0
+            for credit in _credits:
+                credits[i] = int(cgi.escape(credit))
+                i += 1
+            if(action == "add"):
+                Course(parent=ParentKeys.course,
+                       code=code,
+                       name=name,
+                       year=int(year),
+                       credits=credits).put()
+                return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
+                                                        Index.manageCourseUrl))
+            elif(action == "update"):
+                course = Course.query(ancestor=ParentKeys.course)
+                course = course.filter(Course.code==code).get()
+                course.name = name
+                course.year = int(year)
+                course.credits = credits
+                course.put()
+                return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
+                                                        Index.manageCourseUrl))
+            elif(action == "delete"):
+                course = Course.query(ancestor=ParentKeys.course)
+                course = course.filter(Course.code==code).get()
+                course.key.delete()
+                return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
+                                                        Index.manageCourseUrl))
+            elif(action == "manage"):
+                return webapp2.redirect('/{0}/{1}?code={2}'.format(Index.adminUrl,
+                                                        Index.manageCourseSubjectUrl,
+                                                        code))
+                
+                
         courses = Course.query(ancestor=ParentKeys.course)
         templateValues = {
             'title' : Index.title + ' - Admin - Manage Courses',
+            'navigator' : Index.adminNavigator,
             'action' : Index.manageCourseUrl,
             'method' : 'get',
-            'code' : 'code',
-            'name' : 'name',
-            'year' : 'year',
-            'price' : 'price',
             'courses' : courses,
         }
         
@@ -279,26 +299,50 @@ class ManageCourse(webapp2.RequestHandler):
 
 class ManageSubject(webapp2.RequestHandler):
     def get(self):
-        _code = cgi.escape(self.request.get('code'))
-        _name = cgi.escape(self.request.get('name'))
-        _year = cgi.escape(self.request.get('year'))
-        _credit = cgi.escape(self.request.get('credit'))
-        if(_code!="" and _name!="" and _credit!=""):
+        action = cgi.escape(self.request.get('action'))
+        code = cgi.escape(self.request.get('code'))
+        name = cgi.escape(self.request.get('name'))
+        year = cgi.escape(self.request.get('year'))
+        credit = cgi.escape(self.request.get('credit'))
+        generalFee = cgi.escape(self.request.get('generalFee'))
+        examFee = cgi.escape(self.request.get('examFee'))
+        
+        if(action=="add"):
             Subject(parent=ParentKeys.subject,
-                    code=_code,
-                    name=_name,
-                    year=int(_year),
-                    credit=int(_credit)).put()
+                    code=code,
+                    name=name,
+                    year=int(year),
+                    credit=int(credit),
+                    generalFee=float(generalFee),
+                    examFee=float(examFee)).put()
+            
+            return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
+                                                  Index.manageSubjectUrl))
+        elif(action=="update"):
+            subject = Subject.query(ancestor=ParentKeys.subject)
+            subject = subject.filter(Subject.code==code).get()
+            subject.name = name
+            subject.year = int(year)
+            subject.credit = int(credit)
+            subject.generalFee = float(generalFee)
+            subject.examFee = float(examFee)
+            subject.put()
+            return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
+                                                  Index.manageSubjectUrl))
+        elif(action=="delete"):
+            subject = Subject.query(ancestor=ParentKeys.subject)
+            subject = subject.filter(Subject.code==code).get()
+            subject.key.delete()
+            return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
+                                                  Index.manageSubjectUrl))
+            
         
         subjects = Subject.query(ancestor=ParentKeys.subject)
         templateValues = {
             'title' : Index.title + ' - Admin - Add New Subject',
+            'navigator' : Index.adminNavigator,
             'action' : Index.manageSubjectUrl,
             'method' : 'get',
-            'subjectId' : 'code',
-            'subjectName' : 'name',
-            'subjectYear' : 'year',
-            'subjectCredit' : 'credit',
             'subjects' : subjects,
         }
         
@@ -307,17 +351,31 @@ class ManageSubject(webapp2.RequestHandler):
 
 class ManageCourseSubject(webapp2.RequestHandler):
     def get(self):
+        action = cgi.escape(self.request.get('action'))
+        courseCode = cgi.escape(self.request.get('courseCode'))
+        subjectCode = cgi.escape(self.request.get('subjectCode'))
+        compulsory = cgi.escape(self.request.get('compulsory'))
+        courseYear = cgi.escape(self.request.get('courseYear'))
+        if action == "delete":
+            cs = CourseSubject.query(ancestor=ParentKeys.courseSubject)
+            cs = cs.filter(CourseSubject.courseCode==courseCode,
+                CourseSubject.subjectCode==subjectCode,
+                CourseSubject.compulsory==bool(int(compulsory)),
+                CourseSubject.courseYear==int(courseYear)).get()
+            cs.key.delete()
+            return webapp2.redirect('/{0}/{1}?code={2}&year={3}'.format(Index.adminUrl,
+                                                  Index.manageCourseSubjectUrl,
+                                                  courseCode,
+                                                  courseYear))
+        
         code = cgi.escape(self.request.get('code'))
         year = cgi.escape(self.request.get('year'))
         if year == "":
             year = 1;
         else:
             year = int(year)
-        courses = Course.query(ancestor=ParentKeys.course)
-        courses = courses.filter(Course.code == code)
-        course = 0
-        for c in courses:
-            course = c
+        course = Course.query(ancestor=ParentKeys.course)
+        course = course.filter(Course.code == code).get()
         courseSubjects = CourseSubject.query(ancestor=ParentKeys.courseSubject)
         courseSubjects = courseSubjects.filter(CourseSubject.courseCode == code,
                                                CourseSubject.courseYear == year)
@@ -331,6 +389,7 @@ class ManageCourseSubject(webapp2.RequestHandler):
         url = Index.manageCourseSubjectUrl + "?code=" + code + "&year="
         templateValues = {
             'title' : Index.title + ' - Admin - Add Subjects to a Course',
+            'navigator' : Index.adminNavigator,
             'code' : code,
             'course' : course,
             'subjects' : subjects,
@@ -385,7 +444,7 @@ app = webapp2.WSGIApplication([
                                ('/{0}/{1}'.format(Index.registerUrl,
                                                   Index.nonFirstYearUrl),
                                 RegisterNonFirstYearCourse),
-                               ('/%s' % Index.adminUrl,
+                               ('/%s/' % Index.adminUrl,
                                 Admin),
                                ('/{0}/{1}'.format(Index.adminUrl,
                                                   Index.manageCourseUrl),

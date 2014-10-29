@@ -37,18 +37,20 @@
             xmlhttp.send();
         }
 
-        function changeYear()
-        {
-
-        }
     </script>
   </head>
   <body>
-    <h1> {{ title }} </h1>
-    <p>
-        {{ course.name }}
+    <h1> {{ title }} </h1><p>
+    <a href="{{ navigator.course.url }}">
+        {{ navigator.course.text }}
+    </a>
+    |
+    <a href="{{ navigator.subject.url }}">
+        {{ navigator.subject.text }}
+    </a>
     </p>
-    <p>
+    <h2>{{ course.code }} - {{ course.name }}</h2>
+    <p>       
         {% for year in years %}
         {% if year != yearSelect %}
         <a href="{{ url }}{{ year }}">
@@ -59,21 +61,7 @@
         {% endif %}
         {% endfor %}
     </p>
-    <ul>
-        {% for cs in courseSubjects %}
-        <li>
-            {% for ms in mySubjects %}
-                {% if cs.subjectCode == ms.code %}
-                    {{ ms.name }} Y{{ ms.year }}
-                    {% if not cs.compulsory %}
-                        (Optional)
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
-        </li>
-        {% endfor %}
-    </ul>
-    
+    <p>
     <select name="subjects" id="mySelect" onchange="editCredit()">
         {% for subject in subjects %}
         <option value="{{ subject.code }}">{{ subject.name }} - Y{{ subject.year }}</option>
@@ -82,5 +70,32 @@
     Compulsory:
     <input type="checkbox" id="compulsory">
     <input type="button" name="add" value="Add" onclick="addSubject()"></input>
+    
+    </p>
+    <table border="1">
+        {% for cs in courseSubjects %}
+          <tr>
+            {% for ms in mySubjects %}
+                {% if cs.subjectCode == ms.code %}
+                <td>
+                    {{ ms.name }} Y{{ ms.year }}
+                    {% if not cs.compulsory %}
+                        (Optional)
+                    {% endif %}
+                </td>
+                <td>
+                  <form action="{{ action }}" method="{{ method }}">
+                    <input type="hidden" name="courseCode" value="{{ course.code }}" />
+                    <input type="hidden" name="subjectCode" value="{{ ms.code }}" />
+                    <input type="hidden" name="courseYear" value="{{ cs.courseYear }}" />
+                    <input type="hidden" name="compulsory" value="{% if cs.compulsory %}1{% else %}0{% endif %}" />
+                    <input type="submit" name="action" value="delete" />
+                  </form>
+                </td>
+                {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
   </body>
 </html>

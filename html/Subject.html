@@ -7,30 +7,61 @@
   <body>
     <h1> {{ title }} </h1>
     <p>
+    <a href="{{ navigator.course.url }}">
+        {{ navigator.course.text }}
+    </a>
+    |
+    <a href="{{ navigator.subject.url }}">
+        {{ navigator.subject.text }}
+    </a>
+    </p>
+    <p>
     <form action="{{ action }}" method="{{ method }}">
         Subject ID:
-        <input type="text" name="{{ subjectId }}" />
+        <input type="text" name="code" />
         <br />
         Subject Name:
-        <input type="text" name="{{ subjectName }}" />
+        <input type="text" name="name" />
         <br />
         Subject Year:
-        <input type="text" name="{{ subjectYear }}" />
+        <input type="number" name="year" />
         <br />
         Subject Credit:
-        <input type="text" name="{{ subjectCredit }}" />
+        <input type="number" name="credit" />
         <br />
-        <input type="submit" value="Add" />
+        General Fee:
+        <input type="number" name="generalFee" />
+        <br />
+        Exam Fee:
+        <input type="number" name="examFee" />
+        <br />
+        <input type="submit" name="action" value="add" />
     </form>
     </p>
     <p>
     <table border="1">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Year</th>
+          <th>Credit</th>
+          <th>General Fee</th>
+          <th>Exam Fee</th>
+        </tr>
         {% for subject in subjects %}
         <tr>
-            <td>{{ subject.code }}</td>
-            <td>{{ subject.name }}</td>
-            <td>{{ subject.year }}</td>
-            <td>{{ subject.credit }}</td>
+          <form action="{{ action }}" method="{{ method }}">
+            <td>
+              <input type="hidden" name="code" value="{{ subject.code }}" />
+              <input style="border:none" type="text" name="code" value="{{ subject.code }}" disabled="true" /></td>
+            <td><input style="border:none" type="text" name="name" value="{{ subject.name }}" /></td>
+            <td><input style="border:none" type="text" name="year" value="{{ subject.year }}" /></td>
+            <td><input style="border:none" type="text" name="credit" value="{{ subject.credit }}" /></td>
+            <td><input style="border:none" type="text" name="generalFee" value="{{ subject.generalFee }}" /></td>
+            <td><input style="border:none" type="text" name="examFee" value="{{ subject.examFee }}" /></td>
+            <td><input type="submit" name="action" value="update" /></td>
+            <td><input type="submit" name="action" value="delete" /></td>
+          </form>
         </tr>
         {% endfor %}
     </table>

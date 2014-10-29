@@ -8,10 +8,10 @@
         var myForm = "addCourse";
         var myFields;
         var fields = [
-                    "{{ code }}",
-                    "{{ name }}",
-                    "{{ price }}",
-                    "{{ year }}"
+                    "code",
+                    "name",
+                    "price",
+                    "year"
                     ];
         </script>
         <script>
@@ -23,7 +23,7 @@
             myFields = fields.slice();
             for(i=1;i<=years;i++)
             {
-                inputs+= "Year "+ i + ": <input type=\"text\" name=\"y" + i + "\" /><br />";
+                inputs+= "Year "+ i + ": <input type=\"text\" name=\"credit\" /><br />";
                 myFields.push("y"+i.toString());
             }
             tag.innerHTML = inputs;
@@ -33,6 +33,15 @@
   <body>
     <h1> {{ title }} </h1>
     <p>
+    <a href="{{ navigator.course.url }}">
+        {{ navigator.course.text }}
+    </a>
+    |
+    <a href="{{ navigator.subject.url }}">
+        {{ navigator.subject.text }}
+    </a>
+    </p>
+    <p>
     <form name="addCourse"
         action="{{ action }}"
         method="{{ method }}"
@@ -40,13 +49,11 @@
         onsubmit="return validateForm(myForm, myFields)">
         <p>
             Course Code:
-            <input type="text" name="{{ code }}" />
+            <input type="text" name="code" />
             Course Name:
-            <input type="text" name="{{ name }}" />
-            Price:
-            <input type="text" name="{{ price }}" />
+            <input type="text" name="name" />
             Year:
-            <select name="{{ year }}" id="mySelect" onchange="editCredit()">
+            <select name="year" id="mySelect" onchange="editCredit()">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -62,27 +69,36 @@
         <p>
         </p>
         <p>
-            <input type="submit" value="Add" />
+            <input type="submit" name="action" value="add" />
         </p>
     </form>
     </p>
     <p>
     <table border="1">
-        {% for course in courses %}
-        <tr>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Years</th>
+        <th colspan="5">Credits</th>
+      </tr>
+      {% for course in courses %}
+      <tr>
+        <form action="{{ action }}" method="get">
             <td>
-                <a href="course?code={{ course.code }}">
-                    {{ course.code }}
-                </a>
+                <input style="border:none" type="text" name="code" value="{{ course.code }}" disabled="true" />
+                <input type="hidden" name="code" value="{{ course.code }}" />
             </td>
-            <td>{{ course.name }}</td>
-            <td>{{ course.price }}</td>
-            <td>{{ course.year }}</td>
+            <td><input style="border:none" type="text" name="name" value="{{ course.name }}" /></td>
+            <td><input style="border:none" type="text" name="year" value="{{ course.year }}" /></td>
             {% for credit in course.credits %}
-            <td>{{ credit }}</td>
+            <td><input style="border:none" type="text" name="credit" value="{{ credit }}" size="4" /></td>
             {% endfor %}
-        </tr>
-        {% endfor %}
+            <td><input type="submit" name="action" value="update" /></td>
+            <td><input type="submit" name="action" value="delete" /></td>
+            <td><input type="submit" name="action" value="manage" /></td>
+        </form>
+      </tr>
+      {% endfor %}
     </table>
     </p>
   </body>
