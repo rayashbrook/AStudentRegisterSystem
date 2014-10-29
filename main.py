@@ -162,7 +162,7 @@ class ProcessingFirstYear(webapp2.RequestHandler):
                            subjectCode=subject,
                            subjectYear=_year,
                            credit=0).put()
-        self.response.out.write("<h2>Success</h2>")
+        self.response.out.write("<h2>Well Done</h2>")
 
 class CheckIdAvailable(webapp2.RequestHandler):
     def get(self):
