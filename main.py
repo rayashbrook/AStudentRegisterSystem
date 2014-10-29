@@ -38,6 +38,7 @@ class Index(object):
     registerUrl = "register"
     studentUrl = "student"
     firstYearUrl = "first-year"
+    nonFirstYearUrl = "non-first-year"
     showOptionalSubjectsUrl = "show-optional-subjects"
     processingFirstYearUrl = "first-year/processing"
     checkIdAvailableUrl = "first-year/check-available"
@@ -123,6 +124,73 @@ class RegisterCourse(webapp2.RequestHandler):
     def get(self):
         return webapp2.redirect('/{0}/{1}'.format(Index.registerUrl,
                                                   Index.firstYearUrl))
+
+class RegisterNonFirstYearCourse(webapp2.RequestHandler):
+    def get(self):
+        action = cgi.escape(self.request.get('action'))
+        studentId = cgi.escape(self.request.get('id'))
+        if action == "submit":
+            self.process(studentId)
+            return
+        student = Student.query(ancestor=ParentKeys.student)
+        student = student.filter(Student.id==studentId).get()
+        nextYear = student.year + 1
+        course = student.getCourse()
+        subjects = course.getSubjects(nextYear,"optional")
+        
+        templateValues = {
+            'title' : Index.title + ' - Register Non First Year Course',
+            'action' : Index.nonFirstYearUrl,
+            'student' : student,
+            'course' : course,
+            'subjects' : subjects,
+            'nextYear' : nextYear,
+        }
+        
+        path = os.path.join(os.path.dirname(__file__), 'html/RegisterNonFirstYear.html')
+        self.response.out.write(template.render(path, templateValues))
+    def process(self, id):
+        student = Student.query(ancestor=ParentKeys.student)
+        student = student.filter(Student.id==id).get()
+        
+        subjects = self.request.get_all('subject')
+        examOnly = False
+        if cgi.escape(self.request.get('examOnly')) == "1":
+            examOnly = True
+
+        student.year += 1
+        student.examOnly=examOnly
+        student.paid=False
+        student.put()
+        
+        for subject in subjects:
+            subject = cgi.escape(subject)
+            StudentSubject(parent=ParentKeys.studentSubject,
+                           studentId=id,
+                           subjectCode=subject,
+                           subjectYear=student.year,
+                           credit=0).put()
+        courseSubjects = CourseSubject.query(ancestor=ParentKeys.courseSubject)
+        courseSubjects = courseSubjects.filter(CourseSubject.courseCode==student.courseId,
+                                               CourseSubject.courseYear==student.year,
+                                               CourseSubject.compulsory==True)
+        for courseSubject in courseSubjects:
+            subject = courseSubject.subjectCode
+            StudentSubject(parent=ParentKeys.studentSubject,
+                           studentId=id,
+                           subjectCode=subject,
+                           subjectYear=student.year,
+                           credit=0).put()
+        
+        templateValues = {
+            'title' : Index.title + ' - Payment',
+            'payUrl' : "../../" + Index.payUrl,
+            'loginUrl' : "../../" + Index.loginUrl,
+        }
+        
+        path = os.path.join(os.path.dirname(__file__), 'html/Payment.html')
+        self.response.out.write(template.render(path, templateValues))
+    
 
 class RegisterFirstYearCourse(webapp2.RequestHandler):
     def get(self):
@@ -260,7 +328,8 @@ class StudentBB(BaseHandler):
                 course = Course.query(ancestor=ParentKeys.course)
                 course = course.filter(Course.code==student.courseId).get()
                 studentSubjects = StudentSubject.query(ancestor=ParentKeys.studentSubject)
-                studentSubjects = studentSubjects.filter(StudentSubject.studentId==student.id)
+                studentSubjects = studentSubjects.filter(StudentSubject.studentId==student.id,
+                                                         StudentSubject.subjectYear==student.year)
                 subjects = []
                 for studentSubject in studentSubjects:
                     subject = Subject.query(ancestor=ParentKeys.subject)
@@ -280,6 +349,7 @@ class StudentBB(BaseHandler):
             'creditRequired' : creditRequired,
             'creditEarned' : creditEarned,
             'payUrl' : Index.payUrl,
+            'nextYearUrl' : Index.registerUrl + "/" + Index.nonFirstYearUrl,
         }
         
         path = os.path.join(os.path.dirname(__file__), 'html/StudentBB.html')
@@ -495,6 +565,9 @@ app = webapp2.WSGIApplication([
                                ('/{0}/{1}'.format(Index.registerUrl,
                                                   Index.firstYearUrl),
                                 RegisterFirstYearCourse),
+                               ('/{0}/{1}'.format(Index.registerUrl,
+                                                  Index.nonFirstYearUrl),
+                                RegisterNonFirstYearCourse),
                                ('/{0}/{1}'.format(Index.registerUrl,
                                                   Index.showOptionalSubjectsUrl),
                                 ShowOptionalSubjects),

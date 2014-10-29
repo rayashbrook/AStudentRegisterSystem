@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="content-type">
+	<title>
+		{{ title }}
+	</title>
+</head>
+<body>
+<h1>
+	{{ title }}
+</h1>
+<form action="{{ action }}" name="addStudent" id="addStudent" onsubmit="return validate()">
+	<table>
+		<tr>
+			<td>
+				First Name:
+			</td>
+			<td>
+				{{ student.fname }}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Last Name:
+			</td>
+			<td>
+				{{ student.lname }}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Student ID:
+			</td>
+			<td>
+				{{ student.id }}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Course:
+			</td>
+			<td>
+				{{ course.code }} - {{ course.name }} - {{ nextYear }}
+			</td>
+		</tr>
+		<tr>
+			<td>
+				Optional Subjects:
+			</td>
+			<td>
+                            {% for subject in subjects %}
+                            {% if not subject.compulsory %}
+                            <input type="checkbox" name="subject" value="{{ subject.code }}">{{ subject.name }} Y{{ subject.year }}</input>
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+		</tr>
+		<tr>
+			<td>
+				Exam Only:
+			</td>
+			<td> <input type="checkbox" name="examOnly" value="1"></td>
+		</tr>
+		<tr>
+			<td>
+                            <input type="hidden" name="id" value="{{ student.id }}" />
+				<input type="submit" name="action" value="submit" />
+			</td>
+		</tr>
+	</table>
+</form>
+</body>
+</html>

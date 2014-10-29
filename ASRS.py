@@ -30,6 +30,11 @@ class Student(ndb.Model):
         subjects = subjects.filter(Subject.code.IN(codes))
         return subjects
     
+    def getCourse(self):
+        course = Course.query(ancestor=ParentKeys.course)
+        course = course.filter(Course.code==self.courseId).get()
+        return course
+    
 
 class Course(ndb.Model):
     code = ndb.StringProperty()
@@ -37,15 +42,19 @@ class Course(ndb.Model):
     credits = ndb.IntegerProperty(repeated=True)
     year = ndb.IntegerProperty()  
     
-    def getSubjects(self, year=0):
+    def getSubjects(self, year=0, filter="all"):
         subjects = []
         courseSubjects = CourseSubject.query(ancestor=ParentKeys.courseSubject);
         courseSubjects = courseSubjects.filter(CourseSubject.courseCode==self.code)
         if year != 0:
             courseSubjects = courseSubjects.filter(CourseSubject.courseYear==year)
+        if filter == "optional":
+            courseSubjects = courseSubjects.filter(CourseSubject.compulsory==False)
+        elif filter == "compulsory":
+            courseSubjects = courseSubjects.filter(CourseSubject.compulsory==True)
         for courseSubject in courseSubjects:
             subject = Subject.query(ancestor=ParentKeys.subject)
-            subject = subject.filter(Subject.code==courseSubject.subjectCode)
+            subject = subject.filter(Subject.code==courseSubject.subjectCode).get()
             subjects.append(subject)
         return subjects
         

@@ -22,7 +22,7 @@
     {{ student.fname }} {{ student.lname }} - {{ student.id }}<input type="submit" name="login" value="Logout" />
 </form>
 <br />
-<h2>{{ course.code }} - {{ course.name }}</h2>
+<h2>{{ course.code }} - {{ course.name }} - Y{{ student.year }}</h2>
 <table>
     <tr>
         <td>Credit Required:</td>
@@ -40,7 +40,7 @@
     </tr>
     {% for subject in subjects %}
     <tr>
-        <td>{{ subject.name }}</td>
+        <td>{{ subject.name }} - Y{{ subject.year }}</td>
         <td>{{ subject.credit }}</td>
     </tr>
     {% endfor %}
@@ -55,8 +55,11 @@
     <p><h3>You cannot register next year course.</h3></p>
     {% else %}
     <p>
-        <input type="button" name="register" id="register" value="Register Next Year by One Click"/>
-    </p>
+        <form action="{{ nextYearUrl }}" method="get">
+        <input type="hidden" name="id" value="{{ student.id }}" />
+        <input type="submit" value="Register Next Year"/>
+        </form>
+    </p>                                                  
     {% endif %}
 {% endif %}
 
