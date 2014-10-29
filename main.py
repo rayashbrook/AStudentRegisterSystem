@@ -36,7 +36,7 @@ class Index(object):
     loginUrl = "login"
     loginText = "Login to Register Course"
     registerUrl = "register"
-    nonFirstYearUrl = "non-first-year"
+    studentUrl = "student"
     firstYearUrl = "first-year"
     showOptionalSubjectsUrl = "show-optional-subjects"
     processingFirstYearUrl = "first-year/processing"
@@ -50,6 +50,8 @@ class Index(object):
     addSubjectText = "Subject"
     manageCourseSubjectUrl = "course"
     addCourseSubjectUrl = "add-subject-to-course"
+    
+    payUrl = "pay"
     
     adminNavigator = {
         'course' : {
@@ -78,8 +80,44 @@ class MainPage(webapp2.RequestHandler):
 
 class Login(webapp2.RequestHandler):
     def get(self):
-        return webapp2.redirect('/{0}/{1}'.format(Index.registerUrl,
-                                                  Index.nonFirstYearUrl))
+        return webapp2.redirect('/{0}'.format(Index.studentUrl))
+
+class Pay(BaseHandler):
+    def get(self):
+        sid = self.session.get('sid')
+        templateValues = {
+            'title' : Index.title + " - Payment",
+        }
+        if not sid:
+            templateValues['login'] = False
+            templateValues['loginUrl'] = Index.loginUrl
+        else:
+            action = cgi.escape(self.request.get('action'))
+            student = Student.query(ancestor=ParentKeys.student)
+            student = student.filter(Student.id==sid).get()
+            templateValues['login'] = True
+            if action == "pay":
+                student.paid = True
+                student.put()
+                templateValues['paid'] = True
+                templateValues['loginUrl'] = Index.loginUrl
+            else:
+                fee = 0
+                subjects = student.getSubjects()
+                for s in subjects:
+                    fee += s.examFee
+                    if not student.examOnly:
+                        fee += s.generalFee
+                templateValues['subjects'] = subjects
+                templateValues['student'] = student
+                templateValues['fee'] = fee
+                templateValues['action'] = Index.payUrl
+            
+    
+
+        path = os.path.join(os.path.dirname(__file__), 'html/Pay.html')
+        self.response.out.write(template.render(path, templateValues))
+
 
 class RegisterCourse(webapp2.RequestHandler):
     def get(self):
@@ -121,7 +159,7 @@ class ShowOptionalSubjects(webapp2.RequestHandler):
         self.response.out.write(template.render(path, templateValues))
 
 
-class ProcessingFirstYear(webapp2.RequestHandler):
+class ProcessingFirstYear(BaseHandler):
     def get(self):
         fname = cgi.escape(self.request.get('firstname'))
         lname = cgi.escape(self.request.get('lastname'))
@@ -133,6 +171,9 @@ class ProcessingFirstYear(webapp2.RequestHandler):
         address = cgi.escape(self.request.get('address'))
         course = cgi.escape(self.request.get('courses'))
         subjects = self.request.get_all('subject')
+        examOnly = False
+        if cgi.escape(self.request.get('examOnly')) == "1":
+            examOnly = True
 
         _year = 1
         Student(parent=ParentKeys.student,
@@ -143,7 +184,9 @@ class ProcessingFirstYear(webapp2.RequestHandler):
                 birthday=datetime.date(year,month,day),
                 address=address,
                 courseId=course,
-                year=_year).put()
+                year=_year,
+                examOnly=examOnly,
+                paid=False).put()
         
         for subject in subjects:
             subject = cgi.escape(subject)
@@ -163,7 +206,17 @@ class ProcessingFirstYear(webapp2.RequestHandler):
                            subjectCode=subject,
                            subjectYear=_year,
                            credit=0).put()
-        self.response.out.write("<h2>Well Done</h2>")
+            
+        self.session['sid'] = id
+        templateValues = {
+            'title' : Index.title + ' - Payment',
+            'payUrl' : "../../" + Index.payUrl,
+            'loginUrl' : "../../" + Index.loginUrl,
+        }
+        
+        path = os.path.join(os.path.dirname(__file__), 'html/Payment.html')
+        self.response.out.write(template.render(path, templateValues))
+
 
 class CheckIdAvailable(webapp2.RequestHandler):
     def get(self):
@@ -174,7 +227,7 @@ class CheckIdAvailable(webapp2.RequestHandler):
         else:
             self.response.out.write("no")
 
-class RegisterNonFirstYearCourse(BaseHandler):
+class StudentBB(BaseHandler):
     def get(self):
         sid = self.session.get('sid')
         loginMsg = ""
@@ -218,17 +271,18 @@ class RegisterNonFirstYearCourse(BaseHandler):
                 creditRequired = course.credits[student.year-1]
         
         templateValues = {
-            'title' : Index.title + ' - Register Non-First Year Course',
-            'action' : Index.nonFirstYearUrl,
+            'title' : Index.title + ' - Student BB',
+            'action' : Index.studentUrl,
             'loginMsg' : loginMsg,
             'student' : student,
             'course' : course,
             'subjects' : subjects,
             'creditRequired' : creditRequired,
             'creditEarned' : creditEarned,
+            'payUrl' : Index.payUrl,
         }
         
-        path = os.path.join(os.path.dirname(__file__), 'html/RegisterNonFirstYear.html')
+        path = os.path.join(os.path.dirname(__file__), 'html/StudentBB.html')
         self.response.out.write(template.render(path, templateValues))
 
 class Admin(webapp2.RequestHandler):
@@ -434,6 +488,8 @@ app = webapp2.WSGIApplication([
                                 MainPage),
                                ('/%s' % Index.loginUrl,
                                 Login),
+                               ('/%s' % Index.payUrl,
+                                Pay),
                                ('/%s' % Index.registerUrl,
                                 RegisterCourse),
                                ('/{0}/{1}'.format(Index.registerUrl,
@@ -448,9 +504,8 @@ app = webapp2.WSGIApplication([
                                ('/{0}/{1}'.format(Index.registerUrl,
                                                   Index.checkIdAvailableUrl),
                                 CheckIdAvailable),
-                               ('/{0}/{1}'.format(Index.registerUrl,
-                                                  Index.nonFirstYearUrl),
-                                RegisterNonFirstYearCourse),
+                               ('/{0}'.format(Index.studentUrl),
+                                StudentBB),
                                ('/%s/' % Index.adminUrl,
                                 Admin),
                                ('/{0}/{1}'.format(Index.adminUrl,

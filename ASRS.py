@@ -16,6 +16,20 @@ class Student(ndb.Model):
     address = ndb.StringProperty()
     courseId = ndb.StringProperty()
     year = ndb.IntegerProperty()
+    examOnly = ndb.BooleanProperty()
+    paid = ndb.BooleanProperty()
+    
+    def getSubjects(self):
+        ss = StudentSubject.query(ancestor=ParentKeys.studentSubject)
+        ss = ss.filter(StudentSubject.studentId==self.id,
+                       StudentSubject.subjectYear==self.year)
+        codes = []
+        for s in ss:
+            codes.append(s.subjectCode)
+        subjects = Subject.query(ancestor=ParentKeys.subject)
+        subjects = subjects.filter(Subject.code.IN(codes))
+        return subjects
+    
 
 class Course(ndb.Model):
     code = ndb.StringProperty()

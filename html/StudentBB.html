@@ -45,6 +45,12 @@
     </tr>
     {% endfor %}
 </table>
+    {% if not student.paid %}
+    <p><h3>
+    You have not paid yet.
+    <a href="{{ payUrl }}">Pay Now</a>
+    </h3></p>
+    {% endif %}
     {% if creditRequired > creditEarned %}
     <p><h3>You cannot register next year course.</h3></p>
     {% else %}

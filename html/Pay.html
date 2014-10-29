@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
+    <title> {{ title }} </title>
+  </head>
+  <body>
+    <h1> {{ title }} </h1>
+    {% if login %}
+    {% if paid %}
+    <p>
+      Well done.
+        <a href="{{ loginUrl }}">
+            Back to BB
+        </a>
+    </p>
+    
+    {% else %}
+    <h3>
+      {{ student.id }} - {{ student.fname}} {{ student.lname }}
+      {% if student.examOnly %}
+      (Exam Only)
+      {% endif %}
+    </h3>
+    <table border=1>
+      <tr>
+        <th>Subject</th>
+        <th>General Fee</th>
+        <th>Exam Fee</th>
+      </tr>
+      {% for subject in subjects %}
+      <tr>
+        <td>{{ subject.name }}</td>
+        <td>{{ subject.generalFee }}</td>
+        <td>{{ subject.examFee }}</td>
+      </tr>
+      {% endfor %}
+      <tr>
+        <td>Total</td>
+        <td colspan="2">{{ fee }}</td>
+      </tr>
+    </table>
+    <form action="{{ action }}" method="get">
+      <input type="submit" name="action" value="pay" />
+    </form>
+    {% endif %}
+    {% else %}
+    <p>
+        <a href="{{ loginUrl }}">
+            Login
+        </a>
+    </p>
+    {% endif %}
+  </body>
+</html>
