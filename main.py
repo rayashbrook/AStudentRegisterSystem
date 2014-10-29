@@ -254,7 +254,10 @@ class ManageCourse(webapp2.RequestHandler):
         if(code!="" and name!="" and year!=""):
             i = 0
             for credit in _credits:
-                credits[i] = int(cgi.escape(credit))
+                if not credit:
+                    credits[i] = 0
+                else:
+                    credits[i] = int(cgi.escape(credit))
                 i += 1
             if(action == "add"):
                 Course(parent=ParentKeys.course,
@@ -276,6 +279,10 @@ class ManageCourse(webapp2.RequestHandler):
             elif(action == "delete"):
                 course = Course.query(ancestor=ParentKeys.course)
                 course = course.filter(Course.code==code).get()
+                cs = CourseSubject.query(ancestor=ParentKeys.courseSubject)
+                cs = cs.filter(CourseSubject.courseCode==code)
+                for c in cs:
+                    c.key.delete()
                 course.key.delete()
                 return webapp2.redirect('/{0}/{1}'.format(Index.adminUrl,
                                                         Index.manageCourseUrl))
