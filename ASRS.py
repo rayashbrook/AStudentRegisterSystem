@@ -24,10 +24,14 @@ class Student(ndb.Model):
         ss = ss.filter(StudentSubject.studentId==self.id,
                        StudentSubject.subjectYear==self.year)
         codes = []
+        subjects = []
         for s in ss:
             codes.append(s.subjectCode)
         subjects = Subject.query(ancestor=ParentKeys.subject)
-        subjects = subjects.filter(Subject.code.IN(codes))
+        #subjects = subjects.filter(Subject.code.IN(codes))
+        for code in codes:
+            subject = subjects.filter(Subject.code==code)
+            subjects.append(subject)
         return subjects
     
     def getCourse(self):
