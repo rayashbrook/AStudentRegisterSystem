@@ -51,15 +51,20 @@
     <a href="{{ payUrl }}">Pay Now</a>
     </h3></p>
     {% endif %}
-    {% if creditRequired > creditEarned %}
-    <p><h3>You cannot register next year course.</h3></p>
+    
+    {% if course.year == student.year %}
+    <h3>This is you final year. Good Luck!</h3>
     {% else %}
-    <p>
-        <form action="{{ nextYearUrl }}" method="get">
-        <input type="hidden" name="id" value="{{ student.id }}" />
-        <input type="submit" value="Register Next Year"/>
-        </form>
-    </p>                                                  
+        {% if creditRequired > creditEarned %}
+        <p><h3>You cannot register next year course.</h3></p>
+        {% else %}
+        <p>
+            <form action="{{ nextYearUrl }}" method="get">
+            <input type="hidden" name="id" value="{{ student.id }}" />
+            <input type="submit" value="Register Next Year"/>
+            </form>
+        </p>                                                  
+        {% endif %}
     {% endif %}
 {% endif %}
 
